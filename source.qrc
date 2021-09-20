@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/file/reference">
+        <file>file/escape_chars_list</file>
+        <file>file/keywords_list</file>
+        <file>file/operators_list</file>
+        <file>file/others_list</file>
+    </qresource>
+    <qresource prefix="/file/example">
+        <file>file/sample</file>
+    </qresource>
+</RCC>
