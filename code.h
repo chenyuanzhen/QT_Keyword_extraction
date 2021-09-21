@@ -35,7 +35,6 @@ class trie_tree {
         void insert(const QString &filePath, code::phrase_type _type);
         std::pair<std::string, code::phrase_type>   find_char(const char &phrase);
         // 仅能识别出关键字, 运算符和其他符号
-        std::pair<std::string, phrase_type>  get_output();
     };
     std::vector<std::unordered_map<std::string, int>> identify(const std::string& file);
 }

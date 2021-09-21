@@ -36,7 +36,7 @@
       <x>490</x>
       <y>30</y>
       <width>271</width>
-      <height>491</height>
+      <height>531</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -52,7 +52,7 @@
         <x>0</x>
         <y>0</y>
         <width>261</width>
-        <height>491</height>
+        <height>461</height>
        </rect>
       </property>
      </widget>

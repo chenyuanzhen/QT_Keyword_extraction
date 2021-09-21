@@ -66,10 +66,7 @@ std::pair<std::string, code::phrase_type>  code::trie_tree::find_char(const char
         return std::make_pair("", NONE);
     }
 }
-std::pair<std::string, code::phrase_type> code::trie_tree::get_output() {
 
-    return std::make_pair("", NONE);
-}
 bool is_identifier(const std::string& phrase){
     if(phrase.empty())
         return false;
@@ -115,17 +112,6 @@ void addResult(std::vector<std::unordered_map<std::string, int>>& result, const 
 
 /**
  * 识别
- * 先检查宏 #
- * for item in line
- *    放入一个缓存 string
- *    放入find_char (item - 1)
- *    获取get_output, 为NONE, 跳过. 有结果, 记录save下来
- *    若get_output为 "  '    // 需特殊处理
- *    若item == ' ':
- *       check *(item+1) 是否为数字或-, 是数字特殊处理, 传入迭代器处理
- *       缓存与save相比, 若缓存长度与save不同, 则检查缓存是否为标识符, 相同, 则以save为基准 清空缓存
- *    若item是特殊符号:
- *       缓存与save相比, 若缓存长度与save不同, 则检查缓存是否为标识符, 相同, 则以save为基准 清空缓存
  */
 std::vector<std::unordered_map<std::string, int>> code::identify(const std::string& file){
     code::trie_tree trieTree;
@@ -134,11 +120,9 @@ std::vector<std::unordered_map<std::string, int>> code::identify(const std::stri
     trieTree.insert(":/file/reference/file/others_list", code::OTHER);
     trieTree.insert(":/file/reference/file/escape_chars_list", code::ESCAPE_CHAR);
     std::vector<std::unordered_map<std::string, int>> result(10);
-    auto iter = file.begin();
     Status status = NORMAL;
     std::string cache;
-    --iter;
-    while(++iter <= file.end()){
+    for( auto iter = file.begin(); iter <= file.end(); ++iter){
         // 遍历该行, 每一个字符
         auto output = trieTree.find_char(*iter);
         // 触发 //
@@ -184,7 +168,6 @@ std::vector<std::unordered_map<std::string, int>> code::identify(const std::stri
         // 处理 特殊情况
         if(status != NORMAL || output.second == ESCAPE_CHAR){
             if(*iter == '\n' && status == SINGLE_NOTE){
-//                qDebug() << "now status: "<< status;
                 status = NORMAL;
                 // 需要重置 output
                 output.second = NONE;
@@ -199,7 +182,7 @@ std::vector<std::unordered_map<std::string, int>> code::identify(const std::stri
         }
         // iter为数字不会触发
         if(is_special_char(*iter)){
-            // 省略数字的分隔  *iter == '-'
+            // 数字的分隔特殊处理
             if((*iter == '.' || *iter == '-') && isnumber(*(iter+1))){
                 cache.push_back(*iter);
                 continue;
@@ -208,18 +191,17 @@ std::vector<std::unordered_map<std::string, int>> code::identify(const std::stri
             if(is_numbers(cache)){
                 addResult(result, NUMBER, cache);
             }
-            // 以缓存的为主
-            else if(output.first.length() < cache.length()){
+            else if(output.second == NONE){
                 // 检查缓存是否为标识符
                 if(is_identifier(cache)){
                     addResult(result, IDENTIFIER, cache);
                 }
             }
-            else if(output.second != NONE){
-                if(!output.first.empty())
-                    addResult(result, output.second, output.first);
-            }
             cache.clear();
+        }
+        if(output.second != NONE){
+            if(!output.first.empty())
+                addResult(result, output.second, output.first);
         }
         // 进行换行
         if(*iter == '\n'){
