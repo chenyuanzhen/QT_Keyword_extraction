@@ -29,9 +29,11 @@ class trie_tree {
         Node *root;
         Node *now_ptr;
         std::string output;
+        static trie_tree* self;
         void _insert(int index, std::string &phrase, Node *node, code::phrase_type _type);
-    public:
         explicit trie_tree(): root(new Node(' ')), now_ptr(root){};
+    public:
+        static trie_tree* get_trie_tree();
         void insert(const QString &filePath, code::phrase_type _type);
         std::pair<std::string, code::phrase_type>   find_char(const char &phrase);
         // 仅能识别出关键字, 运算符和其他符号

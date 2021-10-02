@@ -9,6 +9,7 @@ bool is_special_char(const char c){
     return isalnum(c) == 0 && c != '_';
 }
 
+code::trie_tree* code::trie_tree::self = nullptr;
 void code::trie_tree::_insert(int index, std::string &phrase, code::Node *node, code::phrase_type _type){
     if(index >= phrase.length()){
         node->this_type = _type;
@@ -110,33 +111,60 @@ void addResult(std::vector<std::unordered_map<std::string, int>>& result, const 
     result[_type][_string] += 1;
 }
 
+code::trie_tree* code::trie_tree::get_trie_tree(){
+    if(self == nullptr){
+        self = new trie_tree();
+        self->insert(":/file/reference/file/operators_list", code::OPERATOR);
+        self->insert(":/file/reference/file/keywords_list", code::KEYWORD);
+        self->insert(":/file/reference/file/others_list", code::OTHER);
+        self->insert(":/file/reference/file/escape_chars_list", code::ESCAPE_CHAR);
+    }
+    return self;
+}
 /**
  * 识别
  */
-std::vector<std::unordered_map<std::string, int>> code::identify(const std::string& file){
-    code::trie_tree trieTree;
-    trieTree.insert(":/file/reference/file/operators_list", code::OPERATOR);
-    trieTree.insert(":/file/reference/file/keywords_list", code::KEYWORD);
-    trieTree.insert(":/file/reference/file/others_list", code::OTHER);
-    trieTree.insert(":/file/reference/file/escape_chars_list", code::ESCAPE_CHAR);
+std::vector<std::unordered_map<std::string, int>> code::identify(const std::string& in_file){
+    std::string file{in_file};
+    // 追加终止符
+    file.push_back('\n');
+    code::trie_tree* trieTree = code::trie_tree::get_trie_tree();
     std::vector<std::unordered_map<std::string, int>> result(10);
     Status status = NORMAL;
     std::string cache;
-    for( auto iter = file.begin(); iter <= file.end(); ++iter){
+    std::string const_str;
+    // 可能闪退
+    for( auto iter = file.begin(); iter < file.end(); ++iter){
+
         // 遍历该行, 每一个字符
-        auto output = trieTree.find_char(*iter);
+        auto output = trieTree->find_char(*iter);
         // 触发 //
         if(output.first == "//"){
             if(status == NORMAL){
-                addResult(result, output.second, output.first);
-                status = SINGLE_NOTE;
+//                addResult(result, output.second, output.first);
+//                status = SINGLE_NOTE;
+                std::string tmp_str;
+                for(auto&item:output.first)
+                    tmp_str.push_back(item);
+                // 读取该行
+                while(*iter != '\n'){
+                    tmp_str.push_back(*iter);
+                    ++iter;
+                }
+                // 复原输出
+                output.second = code::NONE;
+                // 添加结果
+                addResult(result, code::OTHER, tmp_str);
             }
         }
         // 触发 /* */
         else if(output.first == "/*"){
             if(status == NORMAL){
-                addResult(result, output.second, output.first);
+//                addResult(result, output.second, output.first);
                 status = MULTI_NOTE;
+
+                const_str.push_back('/');
+                const_str.push_back('*');
             }
         }
         else if(output.first == "*/"){
@@ -146,35 +174,52 @@ std::vector<std::unordered_map<std::string, int>> code::identify(const std::stri
         }
         // 触发 '
         else if(output.first == "\'"){
-            if(status == NORMAL)
+            if(status == NORMAL){
                 status = CHAR;
+
+                const_str.push_back('\'');
+            }
             else if(status == CHAR){
                 status = NORMAL;
-                addResult(result, output.second, output.first);
+//                addResult(result, output.second, output.first);
             }
 
         }
         // 触发"
         else if(output.first == "\""){
-            if(status == NORMAL)
+            if(status == NORMAL){
                 status = STR;
+                const_str.push_back('"');
+            }
             else if(status == STR){
                 status = NORMAL;
-                addResult(result, output.second, output.first);
+//                addResult(result, output.second, output.first);
             }
 
         }
 
-        // 处理 特殊情况
-        if(status != NORMAL || output.second == ESCAPE_CHAR){
-            if(*iter == '\n' && status == SINGLE_NOTE){
-                status = NORMAL;
-                // 需要重置 output
-                output.second = NONE;
-            }
-            else
-                continue;
+
+        // 处于特殊情况
+        if(status != NORMAL || output.second == ESCAPE_CHAR){     
+            const_str.push_back(*iter);
+            continue;
         }
+        // 关于 <> 要直接往后看, 是否有 > 预先判断出是否引用状态. 不是则继续, iter返回, 是引用则调整iter
+        if(output.first == "<"){
+            auto tmp_iter = iter;
+            std::string tmp;
+            tmp.push_back('<');
+            while(tmp_iter < file.end() && *tmp_iter != '\n'){
+                tmp.push_back(*tmp_iter);
+                if(*tmp_iter == '>'){
+                   iter = tmp_iter;
+                    addResult(result, code::OTHER, tmp);
+                }
+                *tmp_iter++;
+            }
+        }
+
+
 
         // 将数字也装入内
         if(!is_special_char(*iter)){
@@ -199,9 +244,18 @@ std::vector<std::unordered_map<std::string, int>> code::identify(const std::stri
             }
             cache.clear();
         }
+
         if(output.second != NONE){
-            if(!output.first.empty())
-                addResult(result, output.second, output.first);
+            if(!output.first.empty()){
+                if(!const_str.empty()){
+                    addResult(result, output.second, const_str);
+                    const_str.clear();
+                }
+                else{
+                    addResult(result, output.second, output.first);
+                }
+            }
+
         }
         // 进行换行
         if(*iter == '\n'){

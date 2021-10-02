@@ -10,6 +10,18 @@
     <height>619</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>823</width>
+    <height>619</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>823</width>
+    <height>619</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -35,12 +47,12 @@
      <rect>
       <x>490</x>
       <y>30</y>
-      <width>271</width>
+      <width>311</width>
       <height>531</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="tab_keywords">
      <attribute name="title">
@@ -51,8 +63,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>261</width>
-        <height>461</height>
+        <width>291</width>
+        <height>471</height>
        </rect>
       </property>
      </widget>
@@ -66,8 +78,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>261</width>
-        <height>491</height>
+        <width>291</width>
+        <height>471</height>
        </rect>
       </property>
      </widget>
@@ -81,8 +93,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>261</width>
-        <height>491</height>
+        <width>291</width>
+        <height>471</height>
        </rect>
       </property>
      </widget>
@@ -94,10 +106,25 @@
      <widget class="QTextEdit" name="label_others">
       <property name="geometry">
        <rect>
-        <x>3</x>
-        <y>-7</y>
-        <width>261</width>
-        <height>491</height>
+        <x>0</x>
+        <y>0</y>
+        <width>291</width>
+        <height>471</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_numbers">
+     <attribute name="title">
+      <string>数字</string>
+     </attribute>
+     <widget class="QTextEdit" name="label_numbers">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>291</width>
+        <height>471</height>
        </rect>
       </property>
      </widget>

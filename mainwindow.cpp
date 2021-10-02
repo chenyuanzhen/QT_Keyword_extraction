@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->setFixedSize(823, 619);
     QString sample_path = ":/file/example/file/sample";
     QFile file(sample_path);
     //--打开文件成功
@@ -21,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
         QMessageBox ::information(NULL, NULL, "样例文件丢失");
 
     // enum phrase_type: int {NONE = 0, KEYWORD = 1, OPERATOR = 2, OTHER = 3, IDENTIFIER = 4, NUMBER=5};
-    label_list = new QVector<QTextEdit *>{nullptr, ui->label_keywords, ui->label_operators, ui->label_others, ui->label_identifiers, nullptr};
+    label_list = new QVector<QTextEdit *>{nullptr, ui->label_keywords, ui->label_operators, ui->label_others, ui->label_identifiers, ui->label_numbers};
 
 }
 
@@ -70,6 +71,7 @@ void MainWindow::on_action_open_file_triggered()
 
 void MainWindow::on_button_update_clicked()
 {
+
     // 本身就是raw
     std::vector<std::unordered_map<std::string, int>> result = code::identify(ui->text_codes->toPlainText().toStdString());
     for(int i = 0; i < label_list->size(); ++i){
